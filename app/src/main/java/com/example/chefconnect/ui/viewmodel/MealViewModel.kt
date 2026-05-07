@@ -1,4 +1,3 @@
-// ui/viewmodel/MealViewModel.kt
 package com.example.chefconnect.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -73,7 +72,7 @@ class MealViewModel : ViewModel() {
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(500) // debounce de 500ms
+            delay(500)
             _searchState.value = MealUiState.Loading
             try {
                 val response = repository.searchMeals(query)
@@ -98,6 +97,7 @@ class MealViewModel : ViewModel() {
                     _mealDetailState.value = null
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 _mealDetailState.value = null
             }
         }

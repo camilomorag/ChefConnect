@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,11 +20,10 @@ import com.example.chefconnect.ui.screens.*
 sealed class Screen(val route: String) {
     object Categories : Screen("categories")
     object MealsGrid : Screen("meals/{categoryName}") {
-        @Suppress("unused")
         fun passCategory(categoryName: String) = "meals/$categoryName"
     }
-    object MealDetail : Screen("meal/{mealId}") {
-        fun passMealId(mealId: String) = "meal/$mealId"
+    object MealDetail : Screen("mealDetail/{mealId}") {
+        fun passMealId(mealId: String) = "mealDetail/$mealId"
     }
     object Search : Screen("search")
     object Favorites : Screen("favorites")
@@ -35,24 +36,39 @@ fun ChefConnectNavHost(modifier: Modifier = Modifier) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.White,
+                tonalElevation = 0.dp
+            ) {
                 NavigationBarItem(
-                    selected = false,
+                    selected = navController.currentDestination?.route == Screen.Categories.route,
                     onClick = { navController.navigate(Screen.Categories.route) },
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") }
+                    label = { Text("Home") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color(0xFF4CAF50),
+                        selectedTextColor = Color(0xFF4CAF50)
+                    )
                 )
                 NavigationBarItem(
-                    selected = false,
+                    selected = navController.currentDestination?.route == Screen.Search.route,
                     onClick = { navController.navigate(Screen.Search.route) },
                     icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    label = { Text("Search") }
+                    label = { Text("Search") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color(0xFF4CAF50),
+                        selectedTextColor = Color(0xFF4CAF50)
+                    )
                 )
                 NavigationBarItem(
-                    selected = false,
+                    selected = navController.currentDestination?.route == Screen.Favorites.route,
                     onClick = { navController.navigate(Screen.Favorites.route) },
                     icon = { Icon(Icons.Default.Favorite, contentDescription = "Favorites") },
-                    label = { Text("Favorites") }
+                    label = { Text("Favorites") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color(0xFF4CAF50),
+                        selectedTextColor = Color(0xFF4CAF50)
+                    )
                 )
             }
         }
@@ -60,7 +76,7 @@ fun ChefConnectNavHost(modifier: Modifier = Modifier) {
         NavHost(
             navController = navController,
             startDestination = Screen.Categories.route,
-            modifier = modifier.padding(innerPadding) // Usamos innerPadding aquí
+            modifier = modifier.padding(innerPadding)
         ) {
             composable(Screen.Categories.route) {
                 CategoriesScreen(navController)
@@ -70,22 +86,26 @@ fun ChefConnectNavHost(modifier: Modifier = Modifier) {
                 arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
             ) { backStackEntry ->
                 val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
-                // Temporal hasta crear MealsGridScreen
-                Text("Pantalla de comidas para: $categoryName")
+                MealsGridScreen(
+                    navController = navController,
+                    categoryName = categoryName
+                )
             }
             composable(
                 route = Screen.MealDetail.route,
                 arguments = listOf(navArgument("mealId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val mealId = backStackEntry.arguments?.getString("mealId") ?: ""
-                // Temporal hasta crear MealDetailScreen
-                Text("Detalle de comida ID: $mealId")
+                MealDetailScreen(
+                    mealId = mealId,
+                    onBackClick = { navController.popBackStack() }
+                )
             }
             composable(Screen.Search.route) {
-                Text("Pantalla de búsqueda")
+                SearchScreen(navController = navController)
             }
             composable(Screen.Favorites.route) {
-                Text("Pantalla de favoritos")
+                FavoritesScreen(navController = navController)
             }
         }
     }
